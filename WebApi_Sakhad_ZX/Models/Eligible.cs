@@ -1,5 +1,15 @@
 ﻿namespace WebApi_Sakhad_ZX.Models
 {
+
+    /// <summary>
+    ///  Eligible ارسال استعلام اطلاعات هویتی و بیمه ای
+    /// </summary>
+    public class EligibleRequest
+    {
+        public string nationalNumber { get; set; }
+    }
+
+
     /// <summary>
     ///  Eligible دریافت پاسخ استعلام اطلاعات هویتی و بیمه ای
     /// </summary>

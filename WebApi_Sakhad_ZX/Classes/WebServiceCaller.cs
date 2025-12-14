@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Reflection;
 using System.Text;
+using WebApi_Sakhad_ZX.Models;
 
 namespace WebApi_Sakhad_ZX
 {
@@ -74,11 +75,11 @@ namespace WebApi_Sakhad_ZX
                         if (jsonResponse.Contains(" حد مجاز می باشد"))
                         {
                             var _result = PopularStaticClass.ConvertJsonToClass<UnlockByCaptchaVerificationResponse>(jsonResponse);
-                            var v = new FrmVerifyCaptcha(_result.data.FirstOrDefault().captcha);
-                            v.BringToFront();
-                            v.TopLevel = true;
-                            v.TopMost = true;
-                            v.ShowDialog();
+                            //var v = new FrmVerifyCaptcha(_result.data.FirstOrDefault().captcha);
+                            //v.BringToFront();
+                            //v.TopLevel = true;
+                            //v.TopMost = true;
+                            //v.ShowDialog();
                         }
                     }
 

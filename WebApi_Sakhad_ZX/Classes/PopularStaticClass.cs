@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.IO;
 using static System.Net.Mime.MediaTypeNames;
+using Newtonsoft.Json;
 
 namespace WebApi_Sakhad_ZX
 {
@@ -87,379 +91,8 @@ namespace WebApi_Sakhad_ZX
             }
         }
 
-        /// <summary>
-        /// یه متد خوشگل  که بهش کلاس پاس میدی و پراپرتی های دارای صفت خاص رو برمیگردونه و تبدیل میکنه یه لیبل
-        /// </summary>
-        /// <param name="items">ارایه یا لیست کلاس ها</param>
-        /// <param name="panel">کنترل پاس د اده شده برای افزودن کنترل یا کنترل ها</param>
-        public static void CreateAndAddPersianLabels(object instance, FlowLayoutPanel panel)
-        {
-            if (instance == null || panel == null) return;
-
-            panel.SuspendLayout();
-            panel.Controls.Clear();
-
-            // تعریف لیست اشیاء
-            IEnumerable items;
-            if (instance is IEnumerable enumerable && !(instance is string))
-                items = enumerable;
-            else
-                items = new[] { instance };
-
-            foreach (var obj in items)
-            {
-                if (obj == null) continue;
-                var props = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                foreach (var prop in props)
-                {
-                    if (prop.GetCustomAttribute<PersianNameAttribute>() is PersianNameAttribute attr)
-                    {
-                        var val = prop.GetValue(obj)?.ToString() ?? "";
-                        var edtNCode = new ShafaCommon.UIControls.EditView.EditTextBox
-                        {
-                            Caption = attr.Name + ": ",
-                            CaptionHeight = 14,
-                            CaptionWidth = (attr.Name + ": ").Length * 8,
-                            Name = prop.Name,
-                            Value = Fn_ifNeed2Map(val, prop.Name),
-                            ValueHeight = 21,
-                            ValueWidth = val.Length * 8,
-                            FontLable = new System.Drawing.Font("Tahoma", 8.25F),
-                            FontValue = new System.Drawing.Font("Tahoma", 8.25F, FontStyle.Bold),
-                            lbValueColor = System.Drawing.SystemColors.WindowText,
-                            RightToLeft = RightToLeft.Yes,
-                            TextBoxRightToLeft = RightToLeft.Yes,
-                            BackColor = System.Drawing.SystemColors.ControlLightLight,
-                            Size = new Size(
-                                (int)(((val.Length * 8) + ((attr.Name + ": ").Length * 8)) * 1.3),
-                                21
-                            ),
-                            Margin = new Padding(5, 4, 5, 4)
-                            //AllowDigit = ShafaCommon.Types.AllowState.Allow;
-                            //Code = 0;
-                            //FieldName = null;
-                            //TextBoxBorder = System.Windows.Forms.BorderStyle.Fixed3D;
-                            //CaptionAutoSizeEdit = false;
-                            //CaptionAutoSizeView = false;
-                            //AllowEnglish = false;
-                            //AllowMinusChar = false;
-                            //AllowPunctuation = false;
-                            //IsCheckParentVisible = false;
-                            //IsPassword = false;
-                            //Location = new System.Drawing.Point(427, 163);
-                            //MaxLength = 32767;
-                            //MinLength = ((short)(2));
-                            //Mode = ShafaCommon.Types.FormMode.View;
-                            //MultiLine = false;
-                            //edtNCode.TabIndex = 47;
-                            // ترتیب چینش کنترل (در FlowLayoutPanel نیاز نیست، اما می‌گذاریم اگر خواستی تغییر بدی)
-                        };
-
-                        panel.Controls.Add(edtNCode);
-                    }
-                }
-            }
-            panel.ResumeLayout(true);
-        }
-
-        public static void FnClearAddedDynamicLables(FlowLayoutPanel panel)
-        {
-            try
-            {
-                foreach (Control item in panel.Controls.Cast<Control>().ToList())
-                {
-                    if (item is ShafaCommon.UIControls.EditView.EditTextBox edt)
-                    {
-                        panel.Controls.Remove(edt);
-                        edt.Dispose();
-                    }
-                }
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-        }
-
-        /// <summary>
-        /// یه متد خوشگل  که بهش کلاس پاس میدی و پراپرتی های دارای صفت خاص رو برمیگردونه و تبدیل میکنه یه لیبل
-        /// </summary>
-        /// <param name="items">ارایه یا لیست کلاس ها</param>
-        /// <param name="panel">کنترل پاس د اده شده برای افزودن کنترل یا کنترل ها</param>
-        public static void CreateAndAddPersianLabels(object instance, FlowLayoutPanel panel, bool IsAppend)
-        {
-            try
-            {
-                if (instance == null || panel == null) return;
-
-                panel.SuspendLayout();
-                if (IsAppend)
-                {
-                    FnClearAddedDynamicLables(panel);
-                }
-                else
-                {
-                    panel.Controls.Clear();
-                }
-                // تعریف لیست اشیاء
-                IEnumerable items;
-                if (instance is IEnumerable enumerable && !(instance is string))
-                    items = enumerable;
-                else
-                    items = new[] { instance };
-
-                foreach (var obj in items)
-                {
-                    if (obj == null) continue;
-                    var props = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                    foreach (var prop in props)
-                    {
-                        if (prop.GetCustomAttribute<PersianNameAttribute>() is PersianNameAttribute attr)
-                        {
-                            var val = prop.GetValue(obj)?.ToString() ?? "";
-                            var edtNCode = new ShafaCommon.UIControls.EditView.EditTextBox
-                            {
-                                Caption = attr.Name + ": ",
-                                CaptionHeight = 14,
-                                CaptionWidth = (attr.Name + ": ").Length * 8,
-                                Name = prop.Name,
-                                Value = Fn_ifNeed2Map(val, prop.Name),
-                                ValueHeight = 21,
-                                ValueWidth = val.Length * 8,
-                                FontLable = new System.Drawing.Font("Tahoma", 8.25F),
-                                FontValue = new System.Drawing.Font("Tahoma", 8.25F, FontStyle.Bold),
-                                lbValueColor = System.Drawing.SystemColors.WindowText,
-                                RightToLeft = RightToLeft.Yes,
-                                TextBoxRightToLeft = RightToLeft.Yes,
-                                BackColor = System.Drawing.SystemColors.ControlLightLight,
-                                Size = new Size(
-                                    (int)(((val.Length * 8) + ((attr.Name + ": ").Length * 8)) * 1.3),
-                                    21
-                                ),
-                                Margin = new Padding(5, 4, 5, 4)
-                                //AllowDigit = ShafaCommon.Types.AllowState.Allow;
-                                //Code = 0;
-                                //FieldName = null;
-                                //TextBoxBorder = System.Windows.Forms.BorderStyle.Fixed3D;
-                                //CaptionAutoSizeEdit = false;
-                                //CaptionAutoSizeView = false;
-                                //AllowEnglish = false;
-                                //AllowMinusChar = false;
-                                //AllowPunctuation = false;
-                                //IsCheckParentVisible = false;
-                                //IsPassword = false;
-                                //Location = new System.Drawing.Point(427, 163);
-                                //MaxLength = 32767;
-                                //MinLength = ((short)(2));
-                                //Mode = ShafaCommon.Types.FormMode.View;
-                                //MultiLine = false;
-                                //edtNCode.TabIndex = 47;
-                                // ترتیب چینش کنترل (در FlowLayoutPanel نیاز نیست، اما می‌گذاریم اگر خواستی تغییر بدی)
-                            };
-
-                            panel.Controls.Add(edtNCode);
-                        }
-                    }
-                }
-                panel.ResumeLayout(true);
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-        }
-
-        /// <summary>
-        /// متدی برای نمایش اعضای یک لیست از اشیاء در TableLayoutPanel به صورت ردیفی با هدر.
-        /// هر ردیف شامل پراپرتی‌های دارای صفت PersianNameAttribute است و هدر شامل نام‌های فارسی پراپرتی‌ها.
-        /// </summary>
-        /// <param name="items">لیست یا آرایه‌ای از اشیاء</param>
-        /// <param name="panel">TableLayoutPanel برای افزودن کنترل‌ها</param>
-        public static void CreateAndAddPersianLabels(IEnumerable items, TableLayoutPanel panel)
-        {
-            try
-            {
-                if (items == null || panel == null) return;
-
-                panel.SuspendLayout();
-                panel.Controls.Clear();
-                panel.RowStyles.Clear();
-                panel.ColumnStyles.Clear();
-                panel.RowCount = 0;
-                panel.ColumnCount = 0;
-
-                // دریافت پراپرتی‌های دارای صفت PersianNameAttribute از نوع اولین شیء
-                var firstItem = items.Cast<object>().FirstOrDefault();
-                if (firstItem == null) return;
-
-                var props = firstItem.GetType()
-                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(p => p.GetCustomAttribute<PersianNameAttribute>() != null)
-                    .ToList();
-
-                // تنظیم تعداد ستون‌ها
-                panel.ColumnCount = props.Count;
-                for (int i = 0; i < props.Count; i++)
-                {
-                    panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-                }
-
-                // افزودن ردیف هدر
-                panel.RowCount = 1;
-                panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-                for (int colIndex = 0; colIndex < props.Count; colIndex++)
-                {
-                    var attr = props[colIndex].GetCustomAttribute<PersianNameAttribute>();
-                    var headerLabel = new Label
-                    {
-                        Text = attr.Name,
-                        Font = new Font("Tahoma", 8.25F, FontStyle.Bold),
-                        ForeColor = SystemColors.ControlText,
-                        RightToLeft = RightToLeft.Yes,
-                        AutoSize = true,
-                        Margin = new Padding(5, 4, 5, 4),
-                        BackColor = SystemColors.ControlLight,
-                        TextAlign = ContentAlignment.MiddleCenter
-                    };
-                    panel.Controls.Add(headerLabel, colIndex, 0);
-                }
-
-                // افزودن ردیف‌های داده
-                int rowIndex = 1;
-                foreach (var item in items)
-                {
-                    if (item == null) continue;
-
-                    panel.RowCount++;
-                    panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-                    for (int colIndex = 0; colIndex < props.Count; colIndex++)
-                    {
-                        var prop = props[colIndex];
-                        var attr = prop.GetCustomAttribute<PersianNameAttribute>();
-                        var value = prop.GetValue(item)?.ToString() ?? "";
-
-                        var editTextBox = new ShafaCommon.UIControls.EditView.EditTextBox
-                        {
-                            Caption = attr.Name + ": ",
-                            CaptionHeight = 14,
-                            CaptionWidth = (attr.Name + ": ").Length * 8,
-                            Name = prop.Name,
-                            Value = Fn_ifNeed2Map(value, prop.Name),
-                            ValueHeight = 21,
-                            ValueWidth = value.Length * 8,
-                            FontLable = new Font("Tahoma", 8.25F),
-                            FontValue = new Font("Tahoma", 8.25F, FontStyle.Bold),
-                            lbValueColor = SystemColors.WindowText,
-                            RightToLeft = RightToLeft.Yes,
-                            TextBoxRightToLeft = RightToLeft.Yes,
-                            BackColor = SystemColors.ControlLightLight,
-                            Size = new Size(
-                                (int)(((value.Length * 8) + ((attr.Name + ": ").Length * 8)) * 1.3),
-                                21
-                            ),
-                            Margin = new Padding(5, 4, 5, 4)
-                        };
-
-                        panel.Controls.Add(editTextBox, colIndex, rowIndex);
-                    }
-                    rowIndex++;
-                }
-
-                panel.ResumeLayout(true);
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-        }
-
-        // ---------- نسخه جدید با Paging ----------
-        public static void CreateAndAddPersianLabelsPaged(
-            List<object> items, TableLayoutPanel panel,
-            int pageSize, int pageIndex)
-        {
-            try
-            {
-                if (items == null || panel == null || items.Count == 0) return;
-
-                // تنظیم هدر فقط در صفحه اول
-                if (pageIndex == 0)
-                {
-                    panel.Controls.Clear();
-                    panel.RowStyles.Clear();
-                    panel.ColumnStyles.Clear();
-                    var props = items[0].GetType()
-                        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                        .Where(p => p.GetCustomAttribute<PersianNameAttribute>() != null)
-                        .ToList();
-                    panel.ColumnCount = props.Count;
-                    for (int i = 0; i < props.Count; i++)
-                        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
-                    panel.RowCount = 1;
-                    panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-                    for (int colIndex = 0; colIndex < props.Count; colIndex++)
-                    {
-                        var attr = props[colIndex].GetCustomAttribute<PersianNameAttribute>();
-                        panel.Controls.Add(new Label
-                        {
-                            Text = attr.Name,
-                            Font = new Font("Tahoma", 8.25F, FontStyle.Bold),
-                            RightToLeft = RightToLeft.Yes,
-                            AutoSize = true,
-                            Margin = new Padding(5, 4, 5, 4),
-                            BackColor = SystemColors.ControlLight
-                        }, colIndex, 0);
-                    }
-                }
-
-                var start = pageIndex * pageSize;
-                var end = Math.Min(start + pageSize, items.Count);
-                if (start >= end) return;
-
-                var propsCached = items[0].GetType()
-                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(p => p.GetCustomAttribute<PersianNameAttribute>() != null)
-                    .ToList();
-
-                for (int i = start; i < end; i++)
-                {
-                    var item = items[i];
-                    if (item == null) continue;
-                    panel.RowCount++;
-                    panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-                    for (int colIndex = 0; colIndex < propsCached.Count; colIndex++)
-                    {
-                        var prop = propsCached[colIndex];
-                        var attr = prop.GetCustomAttribute<PersianNameAttribute>();
-                        var value = prop.GetValue(item)?.ToString() ?? "";
-                        panel.Controls.Add(new ShafaCommon.UIControls.EditView.EditTextBox
-                        {
-                            Caption = attr.Name + ": ",
-                            Name = prop.Name,
-                            Value = Fn_ifNeed2Map(value, prop.Name),
-                            FontLable = new Font("Tahoma", 8.25F),
-                            FontValue = new Font("Tahoma", 8.25F, FontStyle.Bold),
-                            RightToLeft = RightToLeft.Yes,
-                            TextBoxRightToLeft = RightToLeft.Yes,
-                            BackColor = SystemColors.ControlLightLight,
-                            Size = new Size(
-                                (int)(((value.Length * 8) + ((attr.Name + ": ").Length * 8)) * 1.3),
-                                21
-                            ),
-                            Margin = new Padding(5, 4, 5, 4)
-                        }, colIndex, panel.RowCount - 1);
-                    }
-                }
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-        }
-
+     
+       
         /// <summary>
         /// یه نوع مپینگ
         /// </summary>
@@ -509,102 +142,43 @@ namespace WebApi_Sakhad_ZX
             return val?.ToString() ?? string.Empty;
         }
 
-        /// <summary>
-        /// مخفی کردن سطر های جدول
-        /// </summary>
-        /// <param name="MyTbl">کنترل جدول</param>
-        /// <param name="rows">ارایه حاوی شماره سطر های مد نظر برای مخفی شدن یا نشدن</param>
-        /// <param name="isHide">مخفی بشود یا از حالت مخفی بیرون بیاد</param>
-        public static void Fn_HideTableLayoutPanelInner_Row(TableLayoutPanel MyTbl, int[] rows, bool isHide)
-        {
-            foreach (Control control in MyTbl.Controls)
-                foreach (int row in rows)
-                    if (MyTbl.GetRow(control) == row)
-                        control.Visible = isHide;
-        }
+   
+        ///// <summary>
+        ///// تبدیل رشته به تصویر
+        ///// </summary>
+        ///// <param name="base64String">base64String رشته برای کپچا یا عکس</param>
+        ///// <returns></returns>
+        //public static  Image ConvertBase64ToImage(string base64String)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(base64String)) return null;
+        //        // Remove the data URI prefix if present
+        //        if (base64String.Contains(","))
+        //        {
+        //            base64String = base64String.Split(',')[1];
+        //        }
 
-        /// <summary>
-        /// مخفی کردن سطر های جدول با ارتفاع
-        /// </summary>
-        /// <param name="MyTbl">کنترل جدول</param>
-        /// <param name="rows">ارایه حاوی شماره سطر های مد نظر برای مخفی شدن یا نشدن</param>
-        /// <param name="isHide">مخفی بشود یا از حالت مخفی بیرون بیاد</param>
-        public static void Fn_HideTableLayoutPanel_Row(TableLayoutPanel MyTbl, int[] rows, bool isHide)
-        {
-            foreach (int row in rows)
-                if (isHide)
-                    MyTbl.RowStyles[row].Height = 0;
-                else
-                    MyTbl.RowStyles[row].Height = 1;
-        }
+        //        // Convert base64 string to byte array
+        //        byte[] imageBytes = Convert.FromBase64String(base64String);
 
-        /// <summary>
-        /// تبدیل رشته به تصویر
-        /// </summary>
-        /// <param name="base64String">base64String رشته برای کپچا یا عکس</param>
-        /// <returns></returns>
-        public static Image ConvertBase64ToImage(string base64String)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(base64String)) return null;
-                // Remove the data URI prefix if present
-                if (base64String.Contains(","))
-                {
-                    base64String = base64String.Split(',')[1];
-                }
+        //        // Create memory stream from byte array
+        //        using (var ms = new MemoryStream(imageBytes))
+        //        {
+        //            // Create image from stream
+        //            Image image = Image.FromStream(ms);
+        //            return image;
+        //        }
+        //    }
+        //    catch (Exception zx)
+        //    {
+        //        zx.Log();
+        //        Console.WriteLine($"Error converting Base64 to Image: {zx.Message}");
+        //        return null;
+        //    }
+        //}
 
-                // Convert base64 string to byte array
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-
-                // Create memory stream from byte array
-                using (var ms = new MemoryStream(imageBytes))
-                {
-                    // Create image from stream
-                    Image image = Image.FromStream(ms);
-                    return image;
-                }
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-                Console.WriteLine($"Error converting Base64 to Image: {zx.Message}");
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// خالی کردن کنترل ها و ردیف های درون جدول
-        /// </summary>
-        /// <param name="tableLayoutPanel"></param>
-        public static void ClearTableLayoutPanel(TableLayoutPanel tableLayoutPanel)
-        {
-            try
-            {
-                tableLayoutPanel.SuspendLayout();
-                // آزاد کردن منابع کنترل‌ها
-                for (int i = tableLayoutPanel.Controls.Count - 1; i >= 0; i--)
-                {
-                    var control = tableLayoutPanel.Controls[i];
-                    tableLayoutPanel.Controls.RemoveAt(i);
-                    control.Dispose();
-                }
-
-                // پاک کردن تعریف سطرها و ستون‌ها (در صورت نیاز)
-                //tableLayoutPanel.RowStyles.Clear();
-                //tableLayoutPanel.ColumnStyles.Clear();
-                tableLayoutPanel.RowCount = 0;
-                tableLayoutPanel.ColumnCount = 0;
-
-                tableLayoutPanel.ResumeLayout();
-                tableLayoutPanel.Refresh();
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-        }
-
+ 
         /// <summary>
         /// تبدیل تاریخ به شمسی جاری سیستم
         /// </summary>
@@ -764,7 +338,7 @@ namespace WebApi_Sakhad_ZX
         internal static string ConvertClassToJson<TRequest>(TRequest requestObj)
         {
             return JsonConvert.SerializeObject(requestObj);
-            return JsonConvert.SerializeObject(requestObj, Formatting.None,
+            return JsonConvert.SerializeObject(requestObj, Newtonsoft.Json.Formatting.None,
     new JsonSerializerSettings
     {
         ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver
@@ -823,68 +397,10 @@ namespace WebApi_Sakhad_ZX
             }
         }
 
-        /// <summary>
-        /// چک کردن وضعیت اینکه ایا موفق است یا خیر
-        /// </summary>
-        /// <param name="status"> مقدار عدد ورودی</param>
-        /// <returns> خروجی بولین موفق یا ناموفق</returns>
-        internal static bool ChechStatus(object myInstance)
-        {
-            if (myInstance == null)
-                return false;
-            // کلا گفتم با این متد هر پراپرتی ای به این نام داشتی با مقدار بیار
-            int status = PopularStaticClass.GetPropertyValueSafe<int>(myInstance, "status");
+      
 
-            switch (status)
-            {
-                case 0:
-                    //status == Sakhad_StaticInfoWebServiceData.Ws_SucsessStatus
-                    return true;
-                    break;
-
-                case 1:
-                    return false;
-                    break;
-
-                case 2:// زمانی که نیازه فرم وبسرویس خطای رفع محدودیت رو صدا بزنم
-                    string captcha = ((UnlockByCaptchaVerificationResponse)myInstance).data.First().captcha;
-                    new FrmVerifyCaptcha(captcha).ShowDialog();
-                    return false;
-                    break;
-                //case 4:
-                //    return true;
-                //    break;
-                default:
-
-                    return false;
-                    break;
-            }
-        }
-
-        public static T Fn_FindParentOfType<T>(UserControl this_UC) where T : UserControl
-        {
-            Control current = this_UC.Parent;
-            while (current != null)
-            {
-                if (current is T)
-                    return (T)current;
-                current = current.Parent;
-            }
-            return null;
-        }
-
-        public static T Fn_FindParentOfType<T>(Form this_UC) where T : UserControl
-        {
-            Control current = this_UC.Parent;
-            while (current != null)
-            {
-                if (current is T)
-                    return (T)current;
-                current = current.Parent;
-            }
-            return null;
-        }
-
+    
+      
         /// <summary>
         /// مقایسه الگو در متن
         /// </summary>
@@ -902,284 +418,12 @@ namespace WebApi_Sakhad_ZX
             return str_raw.Contains(searchText);
         }
 
-        public static void FnUI_lbl(Label lbl, bool isTrue)
-        {
-            try
-            {
-                if (isTrue)
-                {
-                    lbl.ForeColor = Color.White;
-                    lbl.BackColor = Color.LimeGreen;
-                }
-                else
-                {
-                    lbl.ForeColor = Color.White;
-                    lbl.BackColor = Color.Red;
-                }
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-        }
+    
 
-        /// <summary>
-        /// می‌خونه همه فایل‌های خدمات نسخه‌دار و بدون نسخه از روی دیسک، و نتایج رو در یک لیست تجمیع می‌کنه.
-        /// </summary>
-        /// <param name="basePath">مسیر پوشه حاوی فایل‌های JSON</param>
-        /// <param name="serviceFiles">دایکشنری فایل‌های سرویس نسخه‌دار</param>
-        /// <param name="unPrescribedFiles">دایکشنری فایل‌های خدمات بدون نسخه</param>
-        /// <returns>لیست تجمیع‌شده از همه سرویس‌ها</returns>
-        public static List<Inner_ServiceDataResponse> LoadAllServiceLists(
-            string basePath,
-            Dictionary<prescriptionType_308_enum, string> serviceFiles,
-            Dictionary<prescriptionType_308_enum, string> unPrescribedFiles)
-        {
-            var allList = new List<Inner_ServiceDataResponse>();
 
-            foreach (var kv in serviceFiles)
-            {
-                var fileName = kv.Value;
-                if (string.IsNullOrWhiteSpace(fileName)) continue;
+       
 
-                var filePath = Path.Combine(basePath, $"json\\GetAllServiceListByType SumCount 231,854\\{fileName}");
-
-                if (File.Exists(filePath))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(filePath);
-                        var tempList = JsonConvert.DeserializeObject<List<Inner_ServiceDataResponse>>(json);
-
-                        if (tempList != null)
-                            allList.AddRange(tempList);
-                    }
-                    catch (Exception zx)
-                    {
-                        zx.Log();
-                        Console.WriteLine($"[Error] در پردازش فایل {fileName}: {zx.Message}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"[Skip] فایل یافت نشد: {fileName}");
-                }
-            }
-
-            // حالا خدمات بدون نسخه هم اضافه می‌کنیم
-            foreach (var kv in unPrescribedFiles)
-            {
-                var fileName = kv.Value;
-                if (string.IsNullOrWhiteSpace(fileName)) continue;
-
-                var filePath = Path.Combine(basePath, $"json\\getAllUnPrescribedServiceListByType SumCount 6,468\\{fileName}");
-
-                if (File.Exists(filePath))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(filePath);
-                        var tempList = JsonConvert.DeserializeObject<List<Inner_ServiceDataResponse>>(json);
-
-                        if (tempList != null)
-                            allList.AddRange(tempList);
-                    }
-                    catch (Exception zx)
-                    {
-                        zx.Log();
-                        Console.WriteLine($"[Error] در پردازش فایل بدون نسخه {fileName}: {zx.Message}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"[Skip] فایل UnPrescribed یافت نشد: {fileName}");
-                }
-            }
-
-            Console.WriteLine($"✅ مجموع آیتم‌ها بارگذاری شد: {allList.Count}");
-            return allList;
-        }
-
-        /// <summary>
-        /// لود محتویات فایل به داخل کلاس
-        /// </summary>
-        /// <param name="fileName">اسم فایل</param>
-        /// <param name="Is_unPrescribed">آیا غیر قابل تجویز است؟</param>
-        /// <returns></returns>
-        public static List<ServiceDataListCoustumized> LoadAllServiceLists(string fileName, bool Is_unPrescribed, string terminology_Code, string terminology_Name)
-        {
-            string basePath = Application.StartupPath;
-            var allList = new List<ServiceDataListCoustumized>();
-
-            if (!string.IsNullOrWhiteSpace(fileName) && terminology_Name.Trim().ToUpper() != "ERX")
-            {
-                var filePath = "";
-                if (Is_unPrescribed)
-                    filePath = Path.Combine(basePath, $"json\\getAllUnPrescribedServiceListByType SumCount 6,468\\{fileName}");
-                else
-                    filePath = Path.Combine(basePath, $"json\\GetAllServiceListByType SumCount 231,854\\{fileName}");
-
-                if (File.Exists(filePath))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(filePath);
-                        var tempList = JsonConvert.DeserializeObject<List<ServiceDataListCoustumized>>(json);
-
-                        if (tempList != null)
-                        {
-                            FnLoopAddTErminology(tempList, terminology_Code, terminology_Name);
-
-                            allList.AddRange(tempList);
-                        }
-                    }
-                    catch (Exception zx)
-                    {
-                        zx.Log();
-                        Console.WriteLine($"[Error] در پردازش فایل {fileName}: {zx.Message}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"[Skip] فایل یافت نشد: {fileName}");
-                }
-            }
-
-            Console.WriteLine($"✅ مجموع آیتم‌ها بارگذاری شد: {allList.Count}");
-            return allList;
-        }
-
-        private static void FnLoopAddTErminology(List<ServiceDataListCoustumized> tempList, string terminology_Code, string terminology_Name)
-        {
-            try
-            {
-                if (tempList == null || tempList.Count == 0) return;
-
-                for (int i = 0; i < tempList.Count; i++)
-                {
-                    var item = tempList[i];
-                    if (item == null) continue;
-                    item.terminology_Code = terminology_Code;
-                    item.terminology_Name = terminology_Name;
-                }
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-        }
-
-        public static async Task<List<Inner_registerInitialPrescriptionRequest>> FnCheckToConvertTerminologyAndGetservice(List<Inner_registerInitialPrescriptionRequest> list_Inner_registerInitialPrescriptionRequest)
-        {
-            try
-            {
-                foreach (var item_inner in list_Inner_registerInitialPrescriptionRequest)
-                {
-                    string tr = item_inner.terminology;
-                    var _type = SearchClass.FindByText<prescriptionType_308_enum>(tr.Trim());
-                    prescriptionType_308_enum _typeTarget = _type.GetValueOrDefault();
-                    // (prescriptionType_308_enum)Convert.ToInt32(item_inner.terminology);
-                    var _response = new convertByTerminologyResponse();
-                    var _request_Terminology = new convertByTerminologyRequest()
-                    {
-                        code = item_inner.code,
-                        source = item_inner.terminology,// _type.ToString().Split('_').FirstOrDefault(),
-                        target = ""
-                    };
-
-                    switch (_type)
-                    {
-                        case prescriptionType_308_enum.Generic:
-                            _request_Terminology.target = "IRC";
-                            _typeTarget = prescriptionType_308_enum.IRC_12;
-                            break;
-
-                        case prescriptionType_308_enum.RVU_1:
-                            _request_Terminology.target = "LOINC";
-                            _typeTarget = prescriptionType_308_enum.IRC_12;
-                            break;
-
-                        case prescriptionType_308_enum.ERX_2:
-                            _request_Terminology.target = "IRC";
-                            _typeTarget = prescriptionType_308_enum.IRC_12;
-                            break;
-
-                        case prescriptionType_308_enum.LOINC_3:
-                            break;
-
-                        case prescriptionType_308_enum.LOINC_4:
-                            break;
-
-                        case prescriptionType_308_enum.LOINC_6:
-                            break;
-
-                        case prescriptionType_308_enum.RVU_7:
-                            break;
-
-                        case prescriptionType_308_enum.SAKHAD_8:
-                            break;
-
-                        case prescriptionType_308_enum.SAKHAD_9:
-                            break;
-
-                        case prescriptionType_308_enum.IRC_12:
-                            break;
-
-                        case prescriptionType_308_enum.LOINC_13:
-                            break;
-
-                        case prescriptionType_308_enum.LOINC_14:
-                            break;
-
-                        case prescriptionType_308_enum.LOINC_15:
-                            break;
-
-                        case prescriptionType_308_enum.RVU_16:
-                            break;
-
-                        case prescriptionType_308_enum.SAKHAD_17:
-                            break;
-
-                        case prescriptionType_308_enum.SAKHAD_18:
-                            break;
-
-                        default:
-                            break;
-                    }
-                    if (!string.IsNullOrEmpty(_request_Terminology.target))
-                    {
-                        _response = await CallWebSevice.FnconvertByTerminologyAsync(_request_Terminology);
-
-                        if (_response != null &&
-                            _response.data.FirstOrDefault() != null
-                            )
-                        {
-                            var _data = _response.data.Where(x => x.basePrice != null && x.basePrice.Length > 0).FirstOrDefault();
-
-                            var _request_service = new getServiceByTypeAndCodeRequest()
-                            {
-                                nationalNumber = _data.code,
-                                type = _typeTarget.GetValue_String()
-                            };
-                            var _servic = await CallWebSevice.FnGetServiceByTypeAndCodeAsync(_request_service);
-                            if (_servic != null &&
-                                    _servic.data.FirstOrDefault() != null)
-                            {
-                                item_inner.code = _data.code;
-                                item_inner.terminology = _request_Terminology.target;
-                                item_inner.type = _typeTarget.GetValue_String();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception zx)
-            {
-                zx.Log();
-            }
-            return list_Inner_registerInitialPrescriptionRequest;
-        }
-
+       
         public static string FnToPersianDate(DateTime date)
         {
             PersianCalendar pc = new PersianCalendar();
@@ -1211,35 +455,6 @@ namespace WebApi_Sakhad_ZX
             return temp;
         }
 
-        /// <summary>
-        /// تغییر سایز تصویر برای بهینه‌سازی حافظه
-        /// </summary>
-        internal static Image ResizeImage(Image originalImage, int maxWidth, int maxHeight)
-        {
-            try
-            {
-                // محاسبه نسبت ابعاد
-                double ratioX = (double)maxWidth / originalImage.Width;
-                double ratioY = (double)maxHeight / originalImage.Height;
-                double ratio = Math.Min(ratioX, ratioY);
-
-                int newWidth = (int)(originalImage.Width * ratio);
-                int newHeight = (int)(originalImage.Height * ratio);
-
-                Bitmap newImage = new Bitmap(newWidth, newHeight);
-
-                using (Graphics graphics = Graphics.FromImage(newImage))
-                {
-                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    graphics.DrawImage(originalImage, 0, 0, newWidth, newHeight);
-                }
-
-                return newImage;
-            }
-            catch
-            {
-                return originalImage; // در صورت خطا، تصویر اصلی رو برمی‌گردونه
-            }
-        }
+       
     }
 }
