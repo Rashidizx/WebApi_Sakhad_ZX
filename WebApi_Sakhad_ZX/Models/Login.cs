@@ -7,7 +7,9 @@
     {
         public string username { get; set; }
 
+        // [SensitiveData]HasSignificantData
         public string password { get; set; }
+
         public int cid { get; set; }
     }
 

@@ -8,17 +8,51 @@ namespace WebApi_Sakhad_ZX.Controllers
     public class GetPrescribeItemsList : Controller
     {
         [HttpPost("PrescribeItemsList")]
-        public ActionResult<getPrescribeItemsListResponse> PrescribeItemsList([FromBody] getPrescribeItemsListRequest request)
+        public async Task<ActionResult<getPrescribeItemsListResponse>> PrescribeItemsListAsync([FromBody] getPrescribeItemsListRequest request, int CenterId)
         {
             var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
        ?? HttpContext.Connection.LocalIpAddress?.ToString();
 
-            return new getPrescribeItemsListResponse()
+            getPrescribeItemsListResponse response = new getPrescribeItemsListResponse()
             {
-                data =  new List<Inner_getPrescribeItemsListResponse>() { },
-                message = "ok",
-                status = 2000
+                data = null,
+                message = "",
+                status = -1
             };
+
+            try
+            {
+                MainClassStatic.FnAddCenter(CenterId);
+                var FindedCenter = MainClassStatic.FnGetCenter(CenterId);
+
+                response = await CallWebSevice.FnGetPrescribeItemsListAsync(request, FindedCenter);
+
+                if (PopularStaticClass.ChechStatus(response))
+                {
+                    if (response.data != null && response.data.Count > 0)
+                    {
+                        //fix me use data
+                    }
+                    else
+                    {
+                        response.message = "";
+                        response.status = -1;
+                    }
+                }
+                else
+                {
+                    response.message = "";
+                    response.status = -1;
+                }
+            }
+            catch (Exception zx)
+            {
+                zx.Log();
+                response.message = "";
+                response.status = -1;
+            }
+
+            return response;
         }
     }
 }

@@ -1,16 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+﻿using Newtonsoft.Json;
 using System.Globalization;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.IO;
-using static System.Net.Mime.MediaTypeNames;
-using Newtonsoft.Json;
+using WebApi_Sakhad_ZX.Classes;
+using WebApi_Sakhad_ZX.Models;
 
 namespace WebApi_Sakhad_ZX
 {
@@ -91,8 +83,6 @@ namespace WebApi_Sakhad_ZX
             }
         }
 
-     
-       
         /// <summary>
         /// یه نوع مپینگ
         /// </summary>
@@ -142,7 +132,6 @@ namespace WebApi_Sakhad_ZX
             return val?.ToString() ?? string.Empty;
         }
 
-   
         ///// <summary>
         ///// تبدیل رشته به تصویر
         ///// </summary>
@@ -178,7 +167,6 @@ namespace WebApi_Sakhad_ZX
         //    }
         //}
 
- 
         /// <summary>
         /// تبدیل تاریخ به شمسی جاری سیستم
         /// </summary>
@@ -207,20 +195,20 @@ namespace WebApi_Sakhad_ZX
         /// <param name="_sessionId">نشست کاربر</param>
         /// <param name="_requestId">شناسه درخواست که باید در هدر تمامی درخواست ها با همین نام ارسال شود</param>
         /// <param name="_expireSessionId">زمان انقضای نشست کاربر است  nullAble</param>
-        public static void FnSetHeaders(string _sessionId, string _requestId, String _expireSessionId)
+        public static void FnSetHeaders(string _sessionId, string _requestId, String _expireSessionId, SakhadCenter SelectedCenter)
         {
-            SetIfNotEmpty(v => Sakhad_StaticInfoWebServiceData.Ws_sessionId = v, _sessionId);
-            SetIfNotEmpty(v => Sakhad_StaticInfoWebServiceData.Ws_requestId = v, _requestId);
-            SetIfNotEmpty(v => Sakhad_StaticInfoWebServiceData.Ws_expireSessionId = v, _expireSessionId);
+            SetIfNotEmpty(v => SelectedCenter.SessionId = v, _sessionId);
+            SetIfNotEmpty(v => SelectedCenter.RequestId = v, _requestId);
+            SetIfNotEmpty(v => SelectedCenter.ExpireSessionId = v, _expireSessionId);
         }
 
         /// <summary>
         ///  افزودن مقدار جدید در هدر ها
         /// </summary>
         /// <param name="_expireSessionId">زمان انقضای نشست کاربر است  nullAble</param>
-        public static void FnSetHeaders(string _expireSessionId)
+        public static void FnSetHeaders(string _expireSessionId, SakhadCenter SelectedCenter)
         {
-            SetIfNotEmpty(v => Sakhad_StaticInfoWebServiceData.Ws_expireSessionId = v, _expireSessionId);
+            SetIfNotEmpty(v => SelectedCenter.ExpireSessionId = v, _expireSessionId);
         }
 
         /// <summary>
@@ -228,55 +216,57 @@ namespace WebApi_Sakhad_ZX
         /// </summary>
         /// <param name="_accessToken">توکن دسترسی به سرویس ها</param>
         /// <param name="_expireAccessToken">زمان انقضای توکن است</param>
-        public static void FnSetHeaders(string _accessToken, string _expireAccessToken)
+        public static void FnSetHeaders(string _accessToken, string _expireAccessToken, SakhadCenter SelectedCenter)
         {
-            SetIfNotEmpty(v => Sakhad_StaticInfoWebServiceData.Ws_Authorization = v, _accessToken);
-            SetIfNotEmpty(v => Sakhad_StaticInfoWebServiceData.Ws_accessToken = v, _accessToken);
-            SetIfNotEmpty(v => Sakhad_StaticInfoWebServiceData.Ws_expireAccessToken = v, _expireAccessToken);
+            SetIfNotEmpty(v => SelectedCenter.Authorization = v, _accessToken);
+            SetIfNotEmpty(v => SelectedCenter.AccessToken = v, _accessToken);
+            SetIfNotEmpty(v => SelectedCenter.ExpireAccessToken = v, _expireAccessToken);
         }
 
         /// <summary>
         /// ایجاد هدر برای هر لینک وب سرویس جدا
         /// </summary>
-        public static void CreateHeadersList()
+        public static void CreateHeadersList(int CenterId)
         {
             try
             {
+                var FindedCenter = MainClassStatic.FnGetCenter(CenterId);
+
                 Dictionary<string, HttpRequestMessage> HeadersByURL = new Dictionary<string, HttpRequestMessage>();
 
                 var HttpRequest_Login = new HttpRequestMessage();
-                //HttpRequest_Login.Headers.Add("Content-Type", Sakhad_StaticInfoWebServiceData.Ws_Content_Type);
-                HttpRequest_Login.Headers.Add("clientId", Sakhad_StaticInfoWebServiceData.Ws_clientId);
-                HttpRequest_Login.Headers.Add("clientSecret", Sakhad_StaticInfoWebServiceData.Ws_clientSecret);
-                HttpRequest_Login.Headers.Add("workstationid", Sakhad_StaticInfoWebServiceData.Ws_workstationid);
+                //HttpRequest_Login.Headers.Add("Content-Type", FindedCenter.Ws_Content_Type);
+                HttpRequest_Login.Headers.Add("clientId", FindedCenter.ClientId);
+                HttpRequest_Login.Headers.Add("clientSecret", FindedCenter.ClientSecret);
+                HttpRequest_Login.Headers.Add("workstationid", FindedCenter.Workstationid);
 
                 var HttpRequest_getCaptcha = new HttpRequestMessage();
-                //HttpRequest_Login.Headers.Add("Content-Type", Sakhad_StaticInfoWebServiceData.Ws_Content_Type);
-                HttpRequest_getCaptcha.Headers.Add("clientId", Sakhad_StaticInfoWebServiceData.Ws_clientId);
-                HttpRequest_getCaptcha.Headers.Add("clientSecret", Sakhad_StaticInfoWebServiceData.Ws_clientSecret);
-                HttpRequest_getCaptcha.Headers.Add("workstationid", Sakhad_StaticInfoWebServiceData.Ws_workstationid);
-                HttpRequest_getCaptcha.Headers.Add("requestid", Sakhad_StaticInfoWebServiceData.Ws_requestId);
+                //HttpRequest_Login.Headers.Add("Content-Type", FindedCenter.Ws_Content_Type);
+                HttpRequest_getCaptcha.Headers.Add("clientId", FindedCenter.ClientId);
+                HttpRequest_getCaptcha.Headers.Add("clientSecret", FindedCenter.ClientSecret);
+                HttpRequest_getCaptcha.Headers.Add("workstationid", FindedCenter.Workstationid);
+                HttpRequest_getCaptcha.Headers.Add("requestid", FindedCenter.RequestId);
 
                 var HttpRequest_MostWorking = new HttpRequestMessage();
-                //  HttpRequest_MostWorking.Headers.Add("Content-Type", Sakhad_StaticInfoWebServiceData.Ws_Content_Type);
-                HttpRequest_MostWorking.Headers.Add("Authorization", Sakhad_StaticInfoWebServiceData.Ws_Authorization);
-                HttpRequest_MostWorking.Headers.Add("sessionId", Sakhad_StaticInfoWebServiceData.Ws_sessionId);
-                HttpRequest_MostWorking.Headers.Add("requestId", Sakhad_StaticInfoWebServiceData.Ws_requestId);
+                //  HttpRequest_MostWorking.Headers.Add("Content-Type", FindedCenter.Ws_Content_Type);
+                HttpRequest_MostWorking.Headers.Add("Authorization", FindedCenter.Authorization);
+                HttpRequest_MostWorking.Headers.Add("sessionId", FindedCenter.SessionId);
+                HttpRequest_MostWorking.Headers.Add("requestId", FindedCenter.RequestId);
 
                 var HttpRequest_verify_otp = new HttpRequestMessage();
-                //  HttpRequest_verify_otp.Headers.Add("Content-Type", Sakhad_StaticInfoWebServiceData.Ws_Content_Type);
-                HttpRequest_verify_otp.Headers.Add("requestId", Sakhad_StaticInfoWebServiceData.Ws_requestId);
+                //  HttpRequest_verify_otp.Headers.Add("Content-Type", FindedCenter.Ws_Content_Type);
+                HttpRequest_verify_otp.Headers.Add("requestId", FindedCenter.RequestId);
 
                 var HttpRequest_verifyCaptcha = new HttpRequestMessage();
-                //HttpRequest_verifyCaptcha.Headers.Add("Content-Type", Sakhad_StaticInfoWebServiceData.Ws_Content_Type);
-                HttpRequest_verifyCaptcha.Headers.Add("Authorization", Sakhad_StaticInfoWebServiceData.Ws_Authorization);
+                //HttpRequest_verifyCaptcha.Headers.Add("Content-Type", FindedCenter.Ws_Content_Type);
+                HttpRequest_verifyCaptcha.Headers.Add("Authorization", FindedCenter.Authorization);
 
                 var HttpRequest_confirm = new HttpRequestMessage();
-                //    HttpRequest_confirm.Headers.Add("Content-Type", Sakhad_StaticInfoWebServiceData.Ws_Content_Type);
-                HttpRequest_confirm.Headers.Add("clientId", Sakhad_StaticInfoWebServiceData.Ws_clientId);
-                HttpRequest_confirm.Headers.Add("clientSecret", Sakhad_StaticInfoWebServiceData.Ws_clientSecret);
-                HttpRequest_confirm.Headers.Add("workstationid", Sakhad_StaticInfoWebServiceData.Ws_workstationid);
-                HttpRequest_confirm.Headers.Add("requestId", Sakhad_StaticInfoWebServiceData.Ws_requestId);
+                //    HttpRequest_confirm.Headers.Add("Content-Type", FindedCenter.Ws_Content_Type);
+                HttpRequest_confirm.Headers.Add("clientId", FindedCenter.ClientId);
+                HttpRequest_confirm.Headers.Add("clientSecret", FindedCenter.ClientSecret);
+                HttpRequest_confirm.Headers.Add("workstationid", FindedCenter.Workstationid);
+                HttpRequest_confirm.Headers.Add("requestId", FindedCenter.RequestId);
 
                 HeadersByURL.Add(Sakhad_StaticInfoURL.Url_verify_otp, HttpRequest_verify_otp);
 
@@ -321,7 +311,7 @@ namespace WebApi_Sakhad_ZX
                 HeadersByURL.Add(Sakhad_StaticInfoURL.Url_uploadMultiple, HttpRequest_MostWorking);
                 HeadersByURL.Add(Sakhad_StaticInfoURL.Url_deleteUploadedDocumentFile, HttpRequest_MostWorking);
 
-                Sakhad_StaticInfoWebServiceData.AllHeadersByURL = HeadersByURL;
+                FindedCenter.AllHeadersByURL = HeadersByURL;
             }
             catch (Exception zx)
             {
@@ -358,7 +348,7 @@ namespace WebApi_Sakhad_ZX
         {
 #warning گهکاهی مقادیر نال اذیت میکنه
             //گهکاهی مقادیر نال اذیت میکنه fix me
-            return JsonConvert.DeserializeObject<TResponse>(jsonResponse);
+            return JsonConvert.DeserializeObject<TResponse>(jsonResponse, SecureJsonSettings.Default);
         }
 
         /// <summary>
@@ -397,10 +387,6 @@ namespace WebApi_Sakhad_ZX
             }
         }
 
-      
-
-    
-      
         /// <summary>
         /// مقایسه الگو در متن
         /// </summary>
@@ -418,12 +404,6 @@ namespace WebApi_Sakhad_ZX
             return str_raw.Contains(searchText);
         }
 
-    
-
-
-       
-
-       
         public static string FnToPersianDate(DateTime date)
         {
             PersianCalendar pc = new PersianCalendar();
@@ -455,6 +435,42 @@ namespace WebApi_Sakhad_ZX
             return temp;
         }
 
-       
+        /// <summary>
+        /// چک کردن وضعیت اینکه ایا موفق است یا خیر
+        /// </summary>
+        /// <param name="status"> مقدار عدد ورودی</param>
+        /// <returns> خروجی بولین موفق یا ناموفق</returns>
+        internal static bool ChechStatus(object myInstance)
+        {
+            if (myInstance == null)
+                return false;
+            // کلا گفتم با این متد هر پراپرتی ای به این نام داشتی با مقدار بیار
+            int status = PopularStaticClass.GetPropertyValueSafe<int>(myInstance, "status");
+
+            switch (status)
+            {
+                case 0:
+                    //status == Sakhad_StaticInfoWebServiceData.Ws_SucsessStatus
+                    return true;
+                    break;
+
+                case 1:
+                    return false;
+                    break;
+
+                case 2:// زمانی که نیازه فرم وبسرویس خطای رفع محدودیت رو صدا بزنم
+                    string captcha = ((UnlockByCaptchaVerificationResponse)myInstance).data.First().captcha;
+                    //  new FrmVerifyCaptcha(captcha).ShowDialog();
+                    return false;
+                    break;
+                //case 4:
+                //    return true;
+                //    break;
+                default:
+
+                    return false;
+                    break;
+            }
+        }
     }
 }

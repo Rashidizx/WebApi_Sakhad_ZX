@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using WebApi_Sakhad_ZX.Models;
 
@@ -14,6 +13,7 @@ namespace WebApi_Sakhad_ZX
         /// فراخوانی وب‌سرویس به صورت جنریک با مدیریت هوشمند خطا و بازگشت مقدار پیش‌فرض بر اساس نوع خروجی
         /// </summary>
         public static async Task<TResponse> CallAsync<TRequest, TResponse>(
+          SakhadCenter SelectedCenter,
             string miniUrl,
             TRequest requestObj,
             TResponse defaultErrorResponse = null
@@ -31,7 +31,7 @@ namespace WebApi_Sakhad_ZX
                 if (miniUrl == Sakhad_StaticInfoURL.Url_verifyCaptcha)
                     fullUrl = Sakhad_StaticInfoURL.GetFullUrl(miniUrl, false);
 
-                if (!Sakhad_StaticInfoWebServiceData.AllHeadersByURL.TryGetValue(miniUrl, out var wsHeaderData))
+                if (!SelectedCenter.AllHeadersByURL.TryGetValue(miniUrl, out var wsHeaderData))
                     return CreateDefaultError<TResponse>("هدر های داینامیک برای افزودن پیدا نشد");
 
                 var headers = wsHeaderData.Headers;
@@ -41,9 +41,9 @@ namespace WebApi_Sakhad_ZX
 
                 _httpClient.DefaultRequestHeaders.Clear();
                 foreach (var header in headers)
+                {
                     _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
-
-                var multipart1 = new MultipartFormDataContent();
+                }
 
                 try
                 {

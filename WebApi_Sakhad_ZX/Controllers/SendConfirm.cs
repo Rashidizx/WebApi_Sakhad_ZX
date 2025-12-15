@@ -4,16 +4,17 @@ using WebApi_Sakhad_ZX.Models;
 namespace WebApi_Sakhad_ZX.Controllers
 {
     [ApiController]
-    [Route("Eligible/[controller]")]
-    public class GetEligible : Controller
+    [Route("Confirm/[controller]")]
+    public class SendConfirm : Controller
     {
-        [HttpPost("Eligible")]
-        public async Task<ActionResult<EligibleResponse>> EligibleAsync(string nationalNumber, int CenterId)
+        [HttpPost("Confirm")]
+        public async Task<ActionResult<ConfirmResponse>> ConfirmAsync(string CaptchaAnswer, int CenterId)
         {
             var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
        ?? HttpContext.Connection.LocalIpAddress?.ToString();
+            PopularStaticClass.CreateHeadersList(CenterId);
 
-            EligibleResponse response = new EligibleResponse()
+            ConfirmResponse response = new ConfirmResponse()
             {
                 data = null,
                 message = "",
@@ -22,20 +23,21 @@ namespace WebApi_Sakhad_ZX.Controllers
 
             try
             {
-                MainClassStatic.FnAddCenter(CenterId);
                 var FindedCenter = MainClassStatic.FnGetCenter(CenterId);
-                EligibleRequest request = new EligibleRequest
+                var request = new ConfirmRequest
                 {
-                    nationalNumber = nationalNumber
+                    answer = CaptchaAnswer,
+                    sessionId = FindedCenter.SessionId
                 };
 
-                response = await CallWebSevice.FnEligibleAsync(request, FindedCenter);
+                response = await CallWebSevice.FnConfirmAsync(request, FindedCenter);
 
                 if (PopularStaticClass.ChechStatus(response))
                 {
                     if (response.data != null && response.data.Count > 0)
                     {
-                        //fix me use data
+                        PopularStaticClass.FnSetHeaders(response.data[0].sessionId, response.data[0].requestId, response.data[0].expireSessionId, FindedCenter);
+                        PopularStaticClass.FnSetHeaders(response.data[0].accessToken, response.data[0].expireAccessToken, FindedCenter);
                     }
                     else
                     {

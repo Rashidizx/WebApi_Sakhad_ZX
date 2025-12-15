@@ -13,7 +13,6 @@ namespace WebApi_Sakhad_ZX
 
         private static readonly string _logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs", "ErrorLog.txt");
 
-
         public enum CenterCodes_enum
         {
             [Description("مطب پزشکی")]
@@ -40,6 +39,7 @@ namespace WebApi_Sakhad_ZX
             [Description("تجهیزات پزشکی و عینک")]
             MedicalEquipmentAndOptics = 122095
         }
+
         public static class RuntimeContext
         {
             [ThreadStatic]
@@ -62,7 +62,6 @@ namespace WebApi_Sakhad_ZX
                 return sb.ToString();
             }
         }
-
 
         /// <summary>
         ///   ثبت جزئیات کامل Exception در فایل لاگ با زمان، کلاس، متد، خط، کاربر، IP و StackTrace
@@ -178,7 +177,6 @@ namespace WebApi_Sakhad_ZX
                 // جلوگیری از خطای مجدد هنگام ثبت لاگ
             }
         }
-
     }
 
     internal class Sakhad_StaticInfoURL
@@ -449,7 +447,7 @@ namespace WebApi_Sakhad_ZX
         /// <summary>
         /// لیست همه هدر های وب سرویس ها
         /// </summary>
-        public static Dictionary<string, HttpRequestMessage> AllHeadersByURL = new Dictionary<string, HttpRequestMessage>();
+        public static Dictionary<string, HttpRequestMessage> AllHeadersByURL1 = new Dictionary<string, HttpRequestMessage>();
 
         /// <summary>
         ///هدر فرمت ثابت ارسال و دریافت json
@@ -475,7 +473,6 @@ namespace WebApi_Sakhad_ZX
         /// شناسه مرکز
         /// </summary>
         public static int Ws_cid = 122091;
-
 
         /// <summary>
         /// نام کاربری پزشک یا منشی یا ارائه دهنده خدمت
@@ -506,110 +503,112 @@ namespace WebApi_Sakhad_ZX
 
         #region تغییر هدر ها
 
-        private static string _Ws_requestId;
-        private static string _Ws_expireAccessToken;
-        private static string _Ws_sessionId;
-        private static string _Ws_expireSessionId;
-        private static string _Ws_accessToken;
-        private static string _Ws_Authorization;
+        /*
+               private static string _Ws_requestId;
+               private static string _Ws_expireAccessToken;
+               private static string _Ws_sessionId;
+               private static string _Ws_expireSessionId;
+               private static string _Ws_accessToken;
+               private static string _Ws_Authorization;
 
-        /// <summary>
-        /// شناسه درخواست که باید در هدر تمامی درخواست ها با همین نام ارسال شود
-        /// </summary>
-        public static string Ws_requestId
-        {
-            get
-            {
-                return _Ws_requestId;
-            }
-            set
-            {
-                _Ws_requestId = value; // مقدار جدید را ذخیره کن
-                PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
-            }
-        }
+               /// <summary>
+               /// شناسه درخواست که باید در هدر تمامی درخواست ها با همین نام ارسال شود
+               /// </summary>
+               public static string Ws_requestId
+               {
+                   get
+                   {
+                       return _Ws_requestId;
+                   }
+                   set
+                   {
+                       _Ws_requestId = value; // مقدار جدید را ذخیره کن
+                       PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
+                   }
+               }
 
-        /// <summary>
-        /// زمان انقضای توکن است
-        /// </summary>
-        public static string Ws_expireAccessToken
-        {
-            get
-            {
-                return _Ws_expireAccessToken;
-            }
-            set
-            {
-                _Ws_expireAccessToken = value; // مقدار جدید را ذخیره کن
-                PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
-            }
-        }
+               /// <summary>
+               /// زمان انقضای توکن است
+               /// </summary>
+               public static string Ws_expireAccessToken
+               {
+                   get
+                   {
+                       return _Ws_expireAccessToken;
+                   }
+                   set
+                   {
+                       _Ws_expireAccessToken = value; // مقدار جدید را ذخیره کن
+                       PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
+                   }
+               }
 
-        /// <summary>
-        /// نشست کاربر
-        /// </summary>
-        public static string Ws_sessionId
-        {
-            get
-            {
-                return _Ws_sessionId;
-            }
-            set
-            {
-                _Ws_sessionId = value; // مقدار جدید را ذخیره کن
-                PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
-            }
-        }
+               /// <summary>
+               /// نشست کاربر
+               /// </summary>
+               public static string Ws_sessionId
+               {
+                   get
+                   {
+                       return _Ws_sessionId;
+                   }
+                   set
+                   {
+                       _Ws_sessionId = value; // مقدار جدید را ذخیره کن
+                       PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
+                   }
+               }
 
-        /// <summary>
-        /// زمان انقضای نشست کاربر است
-        /// </summary>
-        public static string Ws_expireSessionId
-        {
-            get
-            {
-                return _Ws_expireSessionId;
-            }
-            set
-            {
-                _Ws_expireSessionId = value; // مقدار جدید را ذخیره کن
-                PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
-            }
-        }
+               /// <summary>
+               /// زمان انقضای نشست کاربر است
+               /// </summary>
+               public static string Ws_expireSessionId
+               {
+                   get
+                   {
+                       return _Ws_expireSessionId;
+                   }
+                   set
+                   {
+                       _Ws_expireSessionId = value; // مقدار جدید را ذخیره کن
+                       PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
+                   }
+               }
 
-        /// <summary>
-        ///توکن دریافت شده در سرویس ورود مرحله 2 به صورت Bearer {token}
-        ///نکته باحال همون اسم دیگه  accessToken
-        /// </summary>
-        public static string Ws_Authorization
-        {
-            get
-            {
-                return "Bearer " + _Ws_Authorization;
-            }
-            set
-            {
-                _Ws_Authorization = value; // مقدار جدید را ذخیره کن
-                PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
-            }
-        }
+               /// <summary>
+               ///توکن دریافت شده در سرویس ورود مرحله 2 به صورت Bearer {token}
+               ///نکته باحال همون اسم دیگه  accessToken
+               /// </summary>
+               public static string Ws_Authorization
+               {
+                   get
+                   {
+                       return "Bearer " + _Ws_Authorization;
+                   }
+                   set
+                   {
+                       _Ws_Authorization = value; // مقدار جدید را ذخیره کن
+                       PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
+                   }
+               }
 
-        /// <summary>
-        /// توکن دسترسی به سرویس ها
-        /// </summary>
-        public static string Ws_accessToken
-        {
-            get
-            {
-                return _Ws_accessToken;
-            }
-            set
-            {
-                _Ws_accessToken = value; // مقدار جدید را ذخیره کن
-                _Ws_Authorization = value;
-                PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
-            }
-        }
+               /// <summary>
+               /// توکن دسترسی به سرویس ها
+               /// </summary>
+               public static string Ws_accessToken
+               {
+                   get
+                   {
+                       return _Ws_accessToken;
+                   }
+                   set
+                   {
+                       _Ws_accessToken = value; // مقدار جدید را ذخیره کن
+                       _Ws_Authorization = value;
+                       PopularStaticClass.CreateHeadersList(); // تابع تغییر هدر ها رو صدا بزن
+                   }
+               }
+               */
 
         #endregion تغییر هدر ها
     }

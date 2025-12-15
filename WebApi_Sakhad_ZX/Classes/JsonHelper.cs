@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.IO;
+using System.Collections.Concurrent;
+using System.Reflection;
+using WebApi_Sakhad_ZX.Classes;
 
 namespace WebApi_Sakhad_ZX
 {
@@ -19,7 +20,7 @@ namespace WebApi_Sakhad_ZX
             try
             {
                 // تست مستقیم به TPrimary
-                var primaryObj = JsonConvert.DeserializeObject<TPrimary>(json);
+                var primaryObj = JsonConvert.DeserializeObject<TPrimary>(json, SecureJsonSettings.Default);
                 if (primaryObj != null && HasSignificantData(primaryObj))
                     return primaryObj;
             }
@@ -31,7 +32,7 @@ namespace WebApi_Sakhad_ZX
             try
             {
                 // اگر primary سازگار نبود، تست روی TFallback
-                var fallbackObj = JsonConvert.DeserializeObject<TFallback>(json);
+                var fallbackObj = JsonConvert.DeserializeObject<TFallback>(json, SecureJsonSettings.Default);
                 if (fallbackObj != null && HasSignificantData(fallbackObj))
                 {
                     // می‌تونی اینجا mapping بزنی به TPrimary
@@ -46,12 +47,17 @@ namespace WebApi_Sakhad_ZX
             return new TPrimary();
         }
 
+        private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _propCache = new();
+
         // بررسی داشتن داده واقعی
         private static bool HasSignificantData(object obj)
         {
-            foreach (var prop in obj.GetType().GetProperties())
+            var type = obj.GetType();
+            var props = _propCache.GetOrAdd(type, t => t.GetProperties());
+
+            foreach (var p in props)
             {
-                if (prop.GetValue(obj) != null)
+                if (p.GetValue(obj) != null)
                     return true;
             }
             return false;
@@ -130,7 +136,7 @@ namespace WebApi_Sakhad_ZX
                 throw new FileNotFoundException("فایل مورد نظر پیدا نشد.", filePath);
 
             string json = File.ReadAllText(filePath);
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(json, SecureJsonSettings.Default);
         }
     }
 }

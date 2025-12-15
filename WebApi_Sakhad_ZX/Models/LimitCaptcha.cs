@@ -27,6 +27,4 @@
     }
 
     #endregion verifyCaptcha
-
-
 }
