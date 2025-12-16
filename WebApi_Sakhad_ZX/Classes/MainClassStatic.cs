@@ -103,10 +103,8 @@
                 {//اگه موجود بود پاکش کن
                     FnRemoveCenter(NewCenter.CenterId);
                 }
-                else
-                {
-                    sakhadCenters.Add(NewCenter);
-                }
+
+                sakhadCenters.Add(NewCenter);
             }
         }
 

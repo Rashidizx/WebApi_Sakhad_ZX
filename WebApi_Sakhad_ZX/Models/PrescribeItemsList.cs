@@ -5,8 +5,6 @@
     /// </summary>
     public class getPrescribeItemsListRequest
     {
-        //public string MiniUrl { get { return Sakhad_StaticInfoURL.Url_getPrescribeItemsList; } }
-
         /// <summary>
         /// کد ملی بیمار
         /// </summary>

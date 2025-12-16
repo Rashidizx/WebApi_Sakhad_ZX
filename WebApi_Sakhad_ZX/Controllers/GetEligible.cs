@@ -16,7 +16,7 @@ namespace WebApi_Sakhad_ZX.Controllers
             EligibleResponse response = new EligibleResponse()
             {
                 data = null,
-                message = "",
+                message = "خطای مقدار دهی اولیه داخلی",
                 status = -1
             };
 
@@ -39,21 +39,21 @@ namespace WebApi_Sakhad_ZX.Controllers
                     }
                     else
                     {
-                        response.message = "";
-                        response.status = -1;
+                        response.message = $"{response.message}";
+                        response.status = -2;
                     }
                 }
                 else
                 {
-                    response.message = "";
-                    response.status = -1;
+                    response.message = response.message;
+                    response.status = response.status;
                 }
             }
             catch (Exception zx)
             {
                 zx.Log();
-                response.message = "";
-                response.status = -1;
+                response.message = $"خطا داخلی وب سرویس علوم پزشکی:{zx.Message}";
+                response.status = -10;
             }
 
             return response;

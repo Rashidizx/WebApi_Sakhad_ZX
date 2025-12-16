@@ -7,6 +7,39 @@ using static WebApi_Sakhad_ZX.StaticInfo;
 
 namespace WebApi_Sakhad_ZX
 {
+    /// <summary>
+    /// اطلاعات مربوط به کد نوع تجویز - جدول شماره 303
+    /// </summary>
+    public enum prescriptionTypeCode_303_enum
+    {
+        [Description("جنریک")]
+        Generic = 0,
+
+        [Description("ویزیت")]
+        RVU_1 = 1,
+
+        [Description("دارو")]
+        ERX_2 = 2,
+
+        [Description("آزمایش")]
+        LOINC_3 = 3,
+
+        [Description("پرتو پزشکی")]
+        LOINC_4 = 4,
+
+        [Description("توانبخشی/فیزیوتراپی")]
+        LOINC_6 = 6,
+
+        [Description("خدمات پزشکی")]
+        RVU_7 = 7,
+
+        [Description("دندانپزشکی")]
+        SAKHAD_8 = 8,
+
+        [Description("تجهیزات پزشکی/عینک")]
+        SAKHAD_9 = 9
+    }
+
     public static class StaticInfo
     {
         private static readonly object _lock = new object();

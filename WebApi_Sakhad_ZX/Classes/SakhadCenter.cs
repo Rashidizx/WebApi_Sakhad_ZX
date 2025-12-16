@@ -15,6 +15,11 @@
         public string ClientSecret = "";
         public string ClientId = "";
 
+        /// <summary>
+        /// کد نوع تجویز مطابق جدول 303
+        /// </summary>
+        public string type303 { get; set; }
+
         public string SessionId = "test";
         public string RequestId = "test";
         public string ExpireSessionId = "test";

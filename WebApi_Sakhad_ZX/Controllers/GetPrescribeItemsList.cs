@@ -7,7 +7,7 @@ namespace WebApi_Sakhad_ZX.Controllers
     [Route("PrescribeItemsList/[controller]")]
     public class GetPrescribeItemsList : Controller
     {
-        [HttpPost("PrescribeItemsList")]
+        [HttpPost("PrescribeItemsList1")]
         public async Task<ActionResult<getPrescribeItemsListResponse>> PrescribeItemsListAsync([FromBody] getPrescribeItemsListRequest request, int CenterId)
         {
             var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
@@ -16,7 +16,7 @@ namespace WebApi_Sakhad_ZX.Controllers
             getPrescribeItemsListResponse response = new getPrescribeItemsListResponse()
             {
                 data = null,
-                message = "",
+                message = "خطای مقدار دهی اولیه داخلی",
                 status = -1
             };
 
@@ -35,21 +35,21 @@ namespace WebApi_Sakhad_ZX.Controllers
                     }
                     else
                     {
-                        response.message = "";
-                        response.status = -1;
+                        response.message = $"{response.message}";
+                        response.status = -2;
                     }
                 }
                 else
                 {
-                    response.message = "";
-                    response.status = -1;
+                    response.message = response.message;
+                    response.status = response.status;
                 }
             }
             catch (Exception zx)
             {
                 zx.Log();
-                response.message = "";
-                response.status = -1;
+                response.message = $"خطا داخلی وب سرویس علوم پزشکی:{zx.Message}";
+                response.status = -10;
             }
 
             return response;
