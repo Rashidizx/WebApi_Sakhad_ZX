@@ -16,8 +16,8 @@ namespace WebApi_Sakhad_ZX.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<Step1_LoginResponse>> LoginAsync([FromBody] Step1_LoginRequest ZxRequest)
         {
-            var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
-       ?? HttpContext.Connection.LocalIpAddress?.ToString();
+            //     var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+            //?? HttpContext.Connection.LocalIpAddress?.ToString();
 
             Step1_LoginResponse response = new Step1_LoginResponse()
             {
@@ -46,6 +46,7 @@ namespace WebApi_Sakhad_ZX.Controllers
                     if (loginResponse.data != null && loginResponse.data.Count > 0)
                     {
                         PopularStaticClass.FnSetHeaders(loginResponse.data[0].sessionId, loginResponse.data[0].requestId, null, FindedCenter);
+                        PopularStaticClass.CreateHeadersList(ZxRequest.CenterId);
                         response.captchaBase64 = loginResponse.data[0].captcha;
                         response.message = loginResponse.message;
                         response.status = loginResponse.status;
